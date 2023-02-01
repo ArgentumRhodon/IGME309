@@ -67,21 +67,21 @@ void AppClass::InitOpenGL(void)
 }
 void AppClass::InitShaders(void)
 {
-	m_uShaderProgramID = LoadShaders("Shaders//BasicColor.vs", "Shaders//BasicColor.fs");
+	m_uShaderProgramID = LoadShaders("Shaders//BasicColor.vs", "Shaders//E03_Complimentary.fs");
 	glUseProgram(m_uShaderProgramID);
 }
 void AppClass::InitVariables(void)
 {
 	std::vector<glm::vec3> lVertex;
 	//vertex 1
-	lVertex.push_back(glm::vec3(-0.75f, -0.75f, 0.0f)); //position
-	lVertex.push_back(glm::vec3(1.0f, 0.0f, 1.0f)); //color
+	lVertex.push_back(glm::vec3(-1.0f, -1.0f, 0.0f)); //position
+	lVertex.push_back(glm::vec3(1.0f, 0.0f, 0.0f)); //color
 	//vertex 2
-	lVertex.push_back(glm::vec3(0.75f, -0.75f, 0.0f)); //position
-	lVertex.push_back(glm::vec3(1.0f, 1.0f, 0.0f)); //color
+	lVertex.push_back(glm::vec3(1.0f, -1.0f, 0.0f)); //position
+	lVertex.push_back(glm::vec3(0.0f, 1.0f, 0.0f)); //color
 	//vertex 3
-	lVertex.push_back(glm::vec3(0.0f, 0.75f, 0.0f)); //position
-	lVertex.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); //color
+	lVertex.push_back(glm::vec3(0.0f, 1.0f, 0.0f)); //position
+	lVertex.push_back(glm::vec3(0.0f, 0.0f, 1.0f)); //color
 	
 	glGenVertexArrays(1, &m_uVAO);//Generate vertex array object
 	glGenBuffers(1, &m_uVBO);//Generate Vertex Buffered Object
@@ -115,6 +115,11 @@ void AppClass::ProcessKeyboard(sf::Event a_event)
 		m_v3Color = glm::vec3(0.0f, 0.0f, 1.0f);
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
 		m_v3Color = glm::vec3(-1.0f, -1.0f, -1.0f);
+
+	if (a_event.key.code == sf::Keyboard::Key::C)
+	{
+		m_bIsComplimentary = !m_bIsComplimentary;
+	}
 }
 void AppClass::Display(void)
 {
@@ -124,6 +129,9 @@ void AppClass::Display(void)
 	//read uniforms and send values
 	GLuint SolidColor = glGetUniformLocation(m_uShaderProgramID, "SolidColor");
 	glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b);
+	
+	GLuint IsComplimentary = glGetUniformLocation(m_uShaderProgramID, "IsComplimentary");
+	glUniform1i(IsComplimentary, m_bIsComplimentary);
 
 	//draw content
 	glDrawArrays(GL_TRIANGLES, 0, 3);
