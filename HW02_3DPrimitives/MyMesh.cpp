@@ -60,8 +60,28 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	std::vector<vector3> baseVertices;
+
+	// Generate the vertices for the cone's base
+	GLfloat theta = 0;
+	GLfloat deltaT = static_cast<GLfloat>(2.0f * PI / static_cast<GLfloat>(a_nSubdivisions));
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		vector3 vertex = vector3(cos(theta) * a_fRadius, -a_fHeight / 2, sin(theta) * a_fRadius);
+		baseVertices.push_back(vertex);
+		theta += deltaT;
+	}
+	// Fill in base geometry
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		AddTri(vector3(0, -a_fHeight / 2, 0), baseVertices[i], baseVertices[(i + 1) % a_nSubdivisions]);
+	}
+	// Fill in side geometry
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		AddTri(baseVertices[(i + 1) % a_nSubdivisions], baseVertices[i], vector3(0, a_fHeight / 2, 0));
+	}
+
 	// -------------------------------
 
 	// Adding information about color
@@ -84,9 +104,40 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	std::vector<vector3> bottomVertices;
+	std::vector<vector3> topVertices;
+
+	// Generate the vertices for the cylinder's top and bottom
+	GLfloat theta = 0;
+	GLfloat deltaT = static_cast<GLfloat>(2.0f * PI / static_cast<GLfloat>(a_nSubdivisions));
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		// Bottom
+		vector3 vertexB = vector3(cos(theta) * a_fRadius, -a_fHeight / 2, sin(theta) * a_fRadius);
+		bottomVertices.push_back(vertexB);
+
+		// Top
+		vector3 vertexT = vector3(cos(theta) * a_fRadius, a_fHeight / 2, sin(theta) * a_fRadius);
+		topVertices.push_back(vertexT);
+
+		theta += deltaT;
+	}
+
+	// Fill in base geometries
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		// Bottom
+		AddTri(vector3(0, -a_fHeight / 2, 0), bottomVertices[i], bottomVertices[(i + 1) % a_nSubdivisions]);
+		// Top
+		AddTri(vector3(0, a_fHeight / 2, 0), topVertices[(i + 1) % a_nSubdivisions], topVertices[i]);
+	}
 	// -------------------------------
+
+	// Fill in side geometries
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		AddQuad(bottomVertices[(i + 1) % a_nSubdivisions], bottomVertices[i], topVertices[(i + 1) % a_nSubdivisions], topVertices[i]);
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -114,14 +165,60 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	// Vertices
+	std::vector<vector3> outerBottomVertices;
+	std::vector<vector3> innerBottomVertices;
+	std::vector<vector3> outerTopVertices;
+	std::vector<vector3> innerTopVertices;
+
+	// Generate the vertices for the tubes's top and bottom
+	GLfloat theta = 0;
+	GLfloat deltaT = static_cast<GLfloat>(2.0f * PI / static_cast<GLfloat>(a_nSubdivisions));
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		// Outer bottom vertices
+		vector3 vertexOB = vector3(cos(theta) * a_fOuterRadius, -a_fHeight / 2, sin(theta) * a_fOuterRadius);
+		// Inner bottom vertices
+		vector3 vertexIB = vector3(cos(theta) * a_fInnerRadius, -a_fHeight / 2, sin(theta) * a_fInnerRadius);
+		// Outer top vertices
+		vector3 vertexOT = vector3(cos(theta) * a_fOuterRadius, a_fHeight / 2, sin(theta) * a_fOuterRadius);
+		// Inner top vertices
+		vector3 vertexIT = vector3(cos(theta) * a_fInnerRadius, a_fHeight / 2, sin(theta) * a_fInnerRadius);
+
+		// Push vertices
+		outerBottomVertices.push_back(vertexOB);
+		innerBottomVertices.push_back(vertexIB);
+		outerTopVertices.push_back(vertexOT);
+		innerTopVertices.push_back(vertexIT);
+
+		theta += deltaT;
+	}
+
+	// Fill in top and bottom geometries
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		// Top
+		AddQuad(outerTopVertices[(i + 1) % a_nSubdivisions], outerTopVertices[i], innerTopVertices[(i + 1) % a_nSubdivisions], innerTopVertices[i]);
+		// Bottom
+		AddQuad(innerBottomVertices[(i + 1) % a_nSubdivisions], innerBottomVertices[i], outerBottomVertices[(i + 1) % a_nSubdivisions], outerBottomVertices[i]);
+	}
+	// -------------------------------
+	
+	// Fill in side geometries
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		// Outside
+		AddQuad(outerBottomVertices[(i + 1) % a_nSubdivisions], outerBottomVertices[i], outerTopVertices[(i + 1) % a_nSubdivisions], outerTopVertices[i]);
+		// Inside
+		AddQuad(innerTopVertices[(i + 1) % a_nSubdivisions], innerTopVertices[i], innerBottomVertices[(i + 1) % a_nSubdivisions], innerBottomVertices[i]);
+	}
 	// -------------------------------
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
 }
+
 void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSubdivisionsA, int a_nSubdivisionsB, vector3 a_v3Color)
 {
 	if (a_fOuterRadius < 0.01f)
@@ -147,8 +244,45 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	std::vector<std::vector<vector3>> circles;
+
+	// Method based on the parametric equations of a torus 
+	GLfloat u = 0;
+	GLfloat v = 0;
+	GLfloat uStep = static_cast<GLfloat>(2.0 * PI / static_cast<GLfloat>(a_nSubdivisionsA));
+	GLfloat vStep = static_cast<GLfloat>(2.0 * PI / static_cast<GLfloat>(a_nSubdivisionsB));
+	GLfloat crossRadius = static_cast<GLfloat>((a_fOuterRadius - a_fInnerRadius) / 2);
+
+	// Calculate the circles of the torus
+	for (int i = 0; i < a_nSubdivisionsA; i++)
+	{
+		u = i * uStep;
+		// Calculate the vertecies of each circle
+		std::vector<vector3> temp;
+		for (int j = 0; j < a_nSubdivisionsB; j++)
+		{
+			v = j * vStep;
+
+			// Parametric coordinate conversion
+			vector3 vertex = vector3(
+				((a_fInnerRadius + crossRadius) + crossRadius * cos(v)) * cos(u),
+				((a_fInnerRadius + crossRadius) + crossRadius * cos(v)) * sin(u),
+				crossRadius * sin(v)
+			);
+
+			temp.push_back(vertex);
+		}
+		circles.push_back(temp);
+	}
+	
+	// Fill out the geometry of the torus
+	for (int i = 0; i < a_nSubdivisionsA; i++)
+	{
+		for (int j = 0; j < a_nSubdivisionsB; j++)
+		{
+			AddQuad(circles[(i + 1) % a_nSubdivisionsA][j], circles[(i + 1) % a_nSubdivisionsA][(j + 1) % a_nSubdivisionsB], circles[i][j], circles[i][(j + 1) % a_nSubdivisionsB]);
+		}
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -172,7 +306,44 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	std::vector<std::vector<vector3>> circles;
+
+	// Method based on the parametric equations of a sphere
+	GLfloat phi = 0;
+	GLfloat theta = 0;
+	GLfloat phiStep = static_cast<GLfloat>(PI / static_cast<GLfloat>(a_nSubdivisions));
+	GLfloat thetaStep = static_cast<GLfloat>(2.0 * PI / static_cast<GLfloat>(a_nSubdivisions));
+
+	// Calculate the circles of the sphere
+	for (int i = 0; i < a_nSubdivisions + 1; i++)
+	{
+		phi = i * phiStep;
+		// Calculate the vertecies of each circle
+		std::vector<vector3> temp;
+		for (int j = 0; j < a_nSubdivisions; j++)
+		{
+			theta = j * thetaStep;
+
+			// Parametric coordinate conversion
+			vector3 vertex = vector3(
+				a_fRadius * sin(phi) * cos(theta),
+				a_fRadius * sin(phi) * sin(theta),
+				a_fRadius * cos(phi)
+			);
+			temp.push_back(vertex);
+		}
+		circles.push_back(temp);
+	}
+
+	// Fill out the geometry of the sphere
+	for (int i = 0; i < a_nSubdivisions + 1; i++)
+	{
+		for (int j = 0; j < a_nSubdivisions; j++)
+		{
+			AddQuad(circles[(i + 1) % (a_nSubdivisions + 1)][j], circles[(i + 1) % (a_nSubdivisions + 1)][(j + 1) % a_nSubdivisions], circles[i][j], circles[i][(j + 1) % a_nSubdivisions]);
+		}
+	}
+
 	// -------------------------------
 
 	// Adding information about color
