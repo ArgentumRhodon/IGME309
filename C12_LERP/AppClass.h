@@ -45,6 +45,8 @@ private:
 	float m_fMovementSpeed = 0.1f; //how fast the camera will move
 	bool m_bModifier = false; //is shift pressed?
 
+	std::vector<vector3> lerpStops;
+
 public:
 #pragma region Constructor / Run / Destructor
 	/*

@@ -2,62 +2,62 @@
 ImGuiObject Application::gui;
 void Application::DrawGUI(void)
 {
-	//Calculate the window size to know how to draw
-	NewFrame();
+	////Calculate the window size to know how to draw
+	//NewFrame();
 
-	ImVec4 v4Color = ImColor(0, 255, 0);
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
-	//About
-	{
-		ImGui::SetNextWindowPos(ImVec2(1, 1), ImGuiSetCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(340, 60), ImGuiSetCond_FirstUseEver);
-		//String sAbout = m_pSystem->GetAppName() + " - About";
-		String sAbout = "System About";
-		ImGui::Begin(sAbout.c_str(), (bool*)0, window_flags);
-		{
-			ImGui::Text("Application: %s", m_pSystem->GetAppName().c_str());
-			ImGui::Text("Programmer:");
-			ImGui::TextColored(v4Color, m_sProgrammer.c_str());
-			ImGui::Text("FrameRate: %.2f [FPS] -> %.3f [ms/frame]",
-				ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
-			ImGui::Text("RenderCalls: %u per frame", m_uRenderCallCount);
-			ImGui::Text("Control:");
-			ImGui::Text("   LMB + Drag: Arcball");
-			ImGui::Text("   MMB + Drag: Arcball");
-			ImGui::Text("   RMB + Drag: Camera Turn");
-			ImGui::Text("         WASD: Movement");
-			ImGui::Text("        Shift: Speed Modifier");
-			ImGui::Text("	        F1: Perspective");
-			ImGui::Text("	        F2: Orthographic X");
-			ImGui::Text("	        F3: Orthographic Y");
-			ImGui::Text("	        F4: Orthographic Z");
-			ImGui::Text("	         P: Screenshot");
-			v4Color = ImColor(255, 0, 0);
-			ImGui::TextColored(v4Color, "-------------------------------------------");
-			ImGui::Text("	        F5: Cone Z");
-			ImGui::Text("	        F6: Cylinder Z");
-			ImGui::Text("	        F7: Tube Z");
-			ImGui::Text("	        F8: Sphere Z");
-			ImGui::Text("	        F9: Torus Z");
-			ImGui::Text("	       F10: Cube Z");
-		}
-		ImGui::End();
-	}
+	//ImVec4 v4Color = ImColor(0, 255, 0);
+	//ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
+	////About
+	//{
+	//	ImGui::SetNextWindowPos(ImVec2(1, 1), ImGuiSetCond_FirstUseEver);
+	//	ImGui::SetNextWindowSize(ImVec2(340, 60), ImGuiSetCond_FirstUseEver);
+	//	//String sAbout = m_pSystem->GetAppName() + " - About";
+	//	String sAbout = "System About";
+	//	ImGui::Begin(sAbout.c_str(), (bool*)0, window_flags);
+	//	{
+	//		ImGui::Text("Application: %s", m_pSystem->GetAppName().c_str());
+	//		ImGui::Text("Programmer:");
+	//		ImGui::TextColored(v4Color, m_sProgrammer.c_str());
+	//		ImGui::Text("FrameRate: %.2f [FPS] -> %.3f [ms/frame]",
+	//			ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+	//		ImGui::Text("RenderCalls: %u per frame", m_uRenderCallCount);
+	//		ImGui::Text("Control:");
+	//		ImGui::Text("   LMB + Drag: Arcball");
+	//		ImGui::Text("   MMB + Drag: Arcball");
+	//		ImGui::Text("   RMB + Drag: Camera Turn");
+	//		ImGui::Text("         WASD: Movement");
+	//		ImGui::Text("        Shift: Speed Modifier");
+	//		ImGui::Text("	        F1: Perspective");
+	//		ImGui::Text("	        F2: Orthographic X");
+	//		ImGui::Text("	        F3: Orthographic Y");
+	//		ImGui::Text("	        F4: Orthographic Z");
+	//		ImGui::Text("	         P: Screenshot");
+	//		v4Color = ImColor(255, 0, 0);
+	//		ImGui::TextColored(v4Color, "-------------------------------------------");
+	//		ImGui::Text("	        F5: Cone Z");
+	//		ImGui::Text("	        F6: Cylinder Z");
+	//		ImGui::Text("	        F7: Tube Z");
+	//		ImGui::Text("	        F8: Sphere Z");
+	//		ImGui::Text("	        F9: Torus Z");
+	//		ImGui::Text("	       F10: Cube Z");
+	//	}
+	//	ImGui::End();
+	//}
 
-	//Controller Debugger
-	if (false) //if you want to enable the controller debugger window just make this true
-	{
-		ImGui::SetNextWindowPos(ImVec2(1088, 1), ImGuiSetCond_FirstUseEver);
-		ImGui::SetNextWindowSize(ImVec2(190, 641), ImGuiSetCond_FirstUseEver);
-		ImGui::SetNextWindowCollapsed(false, ImGuiSetCond_FirstUseEver);
-		ImGui::End();
-	}
+	////Controller Debugger
+	//if (false) //if you want to enable the controller debugger window just make this true
+	//{
+	//	ImGui::SetNextWindowPos(ImVec2(1088, 1), ImGuiSetCond_FirstUseEver);
+	//	ImGui::SetNextWindowSize(ImVec2(190, 641), ImGuiSetCond_FirstUseEver);
+	//	ImGui::SetNextWindowCollapsed(false, ImGuiSetCond_FirstUseEver);
+	//	ImGui::End();
+	//}
 
-	// Rendering
-	ImGui::Render();
+	//// Rendering
+	//ImGui::Render();
 
-	ImDrawData* pData = ImGui::GetDrawData();
-	RenderDrawLists(pData);
+	//ImDrawData* pData = ImGui::GetDrawData();
+	//RenderDrawLists(pData);
 }
 void Application::RenderDrawLists(ImDrawData* draw_data)
 {

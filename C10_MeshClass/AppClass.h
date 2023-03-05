@@ -20,8 +20,8 @@ using namespace BTX;
 
 class Application
 {
-	MyMesh* m_pMesh1 = nullptr;
-	MyMesh* m_pMesh2 = nullptr;
+	std::vector<MyMesh*> cubes;
+	vector3* positions = nullptr;
 private:
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 	static ImGuiObject gui; //GUI object

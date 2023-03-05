@@ -104,6 +104,8 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Release();
 	Init();
 
+	a_nSubdivisions = 50;
+
 	std::vector<vector3> bottomVertices;
 	std::vector<vector3> topVertices;
 
@@ -240,6 +242,9 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	if (a_nSubdivisionsB > 360)
 		a_nSubdivisionsB = 360;
 
+	a_nSubdivisionsB = 50;
+	a_nSubdivisionsA = 50;
+
 	Release();
 	Init();
 
@@ -304,6 +309,8 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 
 	Release();
 	Init();
+
+	a_nSubdivisions = 50;
 
 	// Replace this with your code
 	std::vector<std::vector<vector3>> circles;
