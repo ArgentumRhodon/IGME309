@@ -27,7 +27,7 @@ class Application
 	uint m_uProjection = 1; //The projection used for each mesh
 	MyCamera* m_pCamera = nullptr; //camera we will use in this application
 private:
-	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
+	String m_sProgrammer = "Lucas Corey - lac2559@rit.edu";
 	static ImGuiObject gui; //GUI object
 
 	uint m_uRenderCallCount = 0; //count of render calls per frame
