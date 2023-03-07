@@ -21,16 +21,31 @@ void MyCamera::MoveForward(float a_fDistance)
 	//		 in the _Binary folder you will notice that we are moving 
 	//		 backwards and we never get closer to the plane as we should 
 	//		 because as we are looking directly at it.
-	m_v3Position += vector3(0.0f, 0.0f, a_fDistance);
-	m_v3Target += vector3(0.0f, 0.0f, a_fDistance);
+
+	// The direction vector of the camera is the difference between the target and the position
+	// Normalize the resulting vector to prevent weird scaling issues with movement
+	vector3 lookDirection = glm::normalize(m_v3Target - m_v3Position);
+	
+	// Modify the position and target to move the same direction, because an
+	// unchanged target would eventually cause the camera to flip.
+	m_v3Position += lookDirection * a_fDistance;
+	m_v3Target += lookDirection * a_fDistance;
 }
 void MyCamera::MoveVertical(float a_fDistance)
 {
-	//Tip:: Look at MoveForward
+	// Move both the position and the target in the y-axis to maintain looking direction vector
+	m_v3Position += AXIS_Y * a_fDistance;
+	m_v3Target += AXIS_Y * a_fDistance;
 }
 void MyCamera::MoveSideways(float a_fDistance)
 {
-	//Tip:: Look at MoveForward
+	// To move left and right relative to the camera's looking direction, I use the cross product to find
+	// the right vector
+	vector3 strafeDirection = glm::cross(m_v3Target - m_v3Position, m_v3Upward);
+
+	// Move the position and the target in the x-axis to maintain looking direction vector
+	m_v3Position += strafeDirection * a_fDistance;
+	m_v3Target += strafeDirection * a_fDistance;
 }
 void MyCamera::CalculateView(void)
 {
@@ -40,6 +55,32 @@ void MyCamera::CalculateView(void)
 	//		 it will receive information from the main code on how much these orientations
 	//		 have change so you only need to focus on the directional and positional 
 	//		 vectors. There is no need to calculate any right click process or connections.
+	// 
+	// Convert pitch and yaw angles to radians
+
+	// There's probably a better way, but this ensures that you can't pitch past +-90 degrees.
+	if (m_v3PitchYawRoll.x > PI / 2)
+	{
+		m_v3PitchYawRoll.x = PI / 2;
+	}
+	if (m_v3PitchYawRoll.x < -PI / 2)
+	{
+		m_v3PitchYawRoll.x = -PI / 2;
+	}
+
+	// Create a quaternion for the rotation
+	quaternion rotation = quaternion(vector3(m_v3PitchYawRoll.x, m_v3PitchYawRoll.y, 0.0f));
+
+	// Calculate the direction vector based on the quaternion
+	vector3 direction = glm::normalize(glm::rotate(rotation, -AXIS_Z));
+
+	// Calculate the target position based on the direction vector
+	m_v3Target = m_v3Position + direction;
+
+	// Calculate the up vector based on the rotation
+	m_v3Upward = glm::normalize(glm::rotate(rotation, AXIS_Y));
+
+	// Calculate the view matrix based on the new orientation and position
 	m_m4View = glm::lookAt(m_v3Position, m_v3Target, m_v3Upward);
 }
 //You can assume that the code below does not need changes unless you expand the functionality
