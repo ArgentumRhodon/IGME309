@@ -2,7 +2,7 @@
 void Application::InitVariables(void)
 {
 	////Change this to your name and email
-	m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
+	m_sProgrammer = "Lucas Corey - lac2559@rit.edu";
 	vector3 v3Position(0.0f, 0.0f, 10.0f);
 	vector3 v3Target = ZERO_V3;
 	vector3 v3Upward = AXIS_Y;
@@ -64,7 +64,7 @@ void Application::Display(void)
 	m_pModelMngr->ClearRenderList();
 
 	//draw gui
-	DrawGUI();
+	//DrawGUI();
 	
 	//end the current frame (internally swaps the front and back buffers)
 	m_pWindow->display();

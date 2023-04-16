@@ -6,12 +6,160 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	//TODO: Calculate the SAT algorithm I STRONGLY suggest you use the
 	//Real Time Collision detection algorithm for OBB here but feel free to
 	//implement your own solution.
+	float ra;
+	float rb;
+	matrix3 R;	// Rotation matrix expressing b in a's coordinate frame.
+	matrix3 AbsR;
+
+	// Calculate R. Making the checks in terms on one coordinate frame improves performance.
+	for (uint i = 0; i < 3; i++)
+	{
+		for (uint j = 0; j < 3; j++)
+		{
+			R[i][j] = glm::dot(m_m4ToWorld[i], a_pOther->GetModelMatrix()[j]);
+		}
+	}
+
+	// Translation vector
+	// Note: Make sure to get in global space.
+	vector3 T = GetCenterGlobal() - a_pOther->GetCenterGlobal();
+	// Bring into A's coordinate frame
+	// I believe this is where the typo mentioned in the video was, as there were two a.u[2]s
+	T = vector3(glm::dot(T, vector3(m_m4ToWorld[0])), glm::dot(T, vector3(m_m4ToWorld[1])), glm::dot(T, vector3(m_m4ToWorld[2])));
+
+	// Compute subexpressions. Epsilon term to account for floating point errors.
+	for (uint i = 0; i < 3; i++)
+	{
+		for (uint j = 0; j < 3; j++)
+		{
+			AbsR[i][j] = abs(R[i][j]) + DBL_EPSILON;
+		}
+	}
+
+	// Run our first axis tests. L = A0, A1, A2
+	for (uint i = 0; i < 3; i++)
+	{
+		// a onto L
+		ra = m_v3HalfWidth[i];
+		// b onto L
+		rb = a_pOther->GetHalfWidth()[0] * AbsR[i][0] + a_pOther->GetHalfWidth()[1] * AbsR[i][1] + a_pOther->GetHalfWidth()[2] * AbsR[i][2];
+		if (abs(T[i]) > ra + rb)
+		{
+			switch (i)
+			{
+				case 0:
+					return BTXs::eSATResults::SAT_AX;
+				case 1:
+					return BTXs::eSATResults::SAT_AY;
+				case 2:
+					return BTXs::eSATResults::SAT_AZ;
+			}
+		}
+	}
+
+	// Run our next axis tests. L = B0, B1, B2
+	for (uint i = 0; i < 3; i++)
+	{
+		// a onto L
+		ra = m_v3HalfWidth[0] * AbsR[0][i] + m_v3HalfWidth[1] * AbsR[1][i] + m_v3HalfWidth[2] * AbsR[2][i];
+		// b onto L
+		rb = a_pOther->GetHalfWidth()[i];
+		if (abs(T[0] * R[0][i] + T[1] * R[1][i] + T[2] * R[2][i]) > ra + rb)
+		{
+			switch (i)
+			{
+				case 0:
+					return BTXs::eSATResults::SAT_BX;
+				case 1:
+					return BTXs::eSATResults::SAT_BY;
+				case 2:
+					return BTXs::eSATResults::SAT_BZ;
+			}
+		}
+	}
+
+	// Next 9 orthogonal axis tests
+
+	// A0 x B0
+	ra = m_v3HalfWidth[1] * AbsR[2][0] + m_v3HalfWidth[2] * AbsR[1][0];
+	rb = a_pOther->GetHalfWidth()[1] * AbsR[0][2] + a_pOther->GetHalfWidth()[2] * AbsR[0][1];
+	if (abs(T[2] * R[1][0] - T[1] * R[2][0]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AXxBX;
+	}
+
+	// A0 x B1
+	ra = m_v3HalfWidth[1] * AbsR[2][1] + m_v3HalfWidth[2] * AbsR[1][1];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[0][2] + a_pOther->GetHalfWidth()[2] * AbsR[0][0];
+	if (abs(T[2] * R[1][1] - T[1] * R[2][1]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AXxBY;
+	}
+
+	// A0 x B2
+	ra = m_v3HalfWidth[1] * AbsR[2][2] + m_v3HalfWidth[2] * AbsR[1][2];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[0][1] + a_pOther->GetHalfWidth()[1] * AbsR[0][0];
+	if (abs(T[2] * R[1][2] - T[1] * R[2][2]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AXxBZ;
+	}
+
+	// A1 x B0
+	ra = m_v3HalfWidth[0] * AbsR[2][0] + m_v3HalfWidth[2] * AbsR[0][0];
+	rb = a_pOther->GetHalfWidth()[1] * AbsR[1][2] + a_pOther->GetHalfWidth()[2] * AbsR[1][1];
+	if (abs(T[0] * R[2][0] - T[2] * R[0][0]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AYxBX;
+	}
+
+	// A1 x B1
+	ra = m_v3HalfWidth[0] * AbsR[2][1] + m_v3HalfWidth[2] * AbsR[0][1];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[1][2] + a_pOther->GetHalfWidth()[2] * AbsR[1][0];
+	if (abs(T[0] * R[2][1] - T[2] * R[0][1]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AYxBY;
+	}
+
+	// A1 x B2
+	ra = m_v3HalfWidth[0] * AbsR[2][2] + m_v3HalfWidth[2] * AbsR[0][2];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[1][1] + a_pOther->GetHalfWidth()[1] * AbsR[1][0];
+	if (abs(T[0] * R[2][2] - T[2] * R[0][2]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AYxBZ;
+	}
+
+	// A2 x B0
+	ra = m_v3HalfWidth[0] * AbsR[1][0] + m_v3HalfWidth[1] * AbsR[0][0];
+	rb = a_pOther->GetHalfWidth()[1] * AbsR[2][2] + a_pOther->GetHalfWidth()[2] * AbsR[2][1];
+	if (abs(T[1] * R[0][0] - T[0] * R[1][0]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AZxBX;
+	}
+
+	// A2 x B1
+	ra = m_v3HalfWidth[0] * AbsR[1][1] + m_v3HalfWidth[1] * AbsR[0][1];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[2][2] + a_pOther->GetHalfWidth()[2] * AbsR[2][0];
+	if (abs(T[1] * R[0][1] - T[0] * R[1][1]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AZxBY;
+	}
+
+	// A2 x B2
+	ra = m_v3HalfWidth[0] * AbsR[1][2] + m_v3HalfWidth[1] * AbsR[0][2];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[2][1] + a_pOther->GetHalfWidth()[1] * AbsR[2][0];
+	if (abs(T[1] * R[0][2] - T[0] * R[1][2]) > ra + rb)
+	{
+		return BTXs::eSATResults::SAT_AZxBZ;
+	}
+
 	return BTXs::eSATResults::SAT_NONE;
 }
 bool MyRigidBody::IsColliding(MyRigidBody* const a_pOther)
 {
 	//check if spheres are colliding
+	//bool bColliding = glm::distance(GetCenterGlobal(), a_pOther->GetCenterGlobal()) < m_fRadius + a_pOther->m_fRadius;
 	bool bColliding = true;
+
 	/*
 	* We use Bounding Spheres or ARBB as a pre-test to avoid expensive calculations (SAT)
 	* we default bColliding to true here to always fall in the need of calculating
@@ -21,7 +169,7 @@ bool MyRigidBody::IsColliding(MyRigidBody* const a_pOther)
 	{
 		uint nResult = SAT(a_pOther);
 
-		if (bColliding) //The SAT shown they are colliding
+		if (nResult == BTXs::eSATResults::SAT_NONE) //The SAT shown they are colliding
 		{
 			this->AddCollisionWith(a_pOther);
 			a_pOther->AddCollisionWith(this);
@@ -30,6 +178,74 @@ bool MyRigidBody::IsColliding(MyRigidBody* const a_pOther)
 		{
 			this->RemoveCollisionWith(a_pOther);
 			a_pOther->RemoveCollisionWith(this);
+
+
+			matrix4 translationMatrix = glm::translate(IDENTITY_M4, (GetCenterGlobal() + a_pOther->GetCenterGlobal()) / 2);
+			matrix4 rotationMatrix;
+			vector3 color;
+
+			// Eh, I gave it my best shot.
+			switch (nResult)
+			{
+				case 1:
+					rotationMatrix = glm::rotate(IDENTITY_M4, glm::radians(90.0f), vector3(0, 1, 0));
+					break;
+				case 2:
+					rotationMatrix = glm::rotate(IDENTITY_M4, glm::radians(90.0f), vector3(1, 0, 0));
+					break;
+				case 3:
+					rotationMatrix = glm::rotate(IDENTITY_M4, glm::radians(90.0f), vector3(0, 0, 1));
+					break;
+				case 4:
+					rotationMatrix = glm::rotate(a_pOther->m_m4ToWorld, glm::radians(90.0f), vector3(0, 1, 0));
+					break;
+				case 5:
+					rotationMatrix = glm::rotate(a_pOther->m_m4ToWorld, glm::radians(90.0f), vector3(1, 0, 0));
+					break;
+				case 6:
+					rotationMatrix = glm::rotate(a_pOther->m_m4ToWorld, glm::radians(90.0f), vector3(0, 0, 1));
+					break;
+			}
+
+#pragma region calc_Color
+			// Calculate color
+			// X
+			if (nResult == 1 || nResult == 4 || nResult == 7)
+			{
+				color = C_RED;
+			}
+			// Y
+			if (nResult == 2 || nResult == 5 || nResult == 11)
+			{
+				color = C_GREEN;
+			}
+			// Z
+			if (nResult == 3 || nResult == 6 || nResult == 15)
+			{
+				color = C_BLUE;
+			}
+
+			// XY
+			if (nResult == 8 || nResult == 10)
+			{
+				color = C_RED + C_GREEN;
+			}
+			// XZ
+			if (nResult == 9 || nResult == 13)
+			{
+				color = C_RED + C_BLUE;
+			}
+			// YZ
+			if (nResult == 12 || nResult == 14)
+			{
+				color = C_GREEN + C_BLUE;
+			}
+			// Rotation matrix calculations
+#pragma endregion
+
+			// Add planes to render list
+			m_pModelMngr->AddPlaneToRenderList(translationMatrix * rotationMatrix * glm::scale(vector3(3.0f, 3.0f, 3.0f)), color);
+			m_pModelMngr->AddPlaneToRenderList(translationMatrix * rotationMatrix * glm::scale(vector3(-3, 3, 3)), color);
 		}
 	}
 	else //they are not colliding with bounding sphere
@@ -37,6 +253,7 @@ bool MyRigidBody::IsColliding(MyRigidBody* const a_pOther)
 		this->RemoveCollisionWith(a_pOther);
 		a_pOther->RemoveCollisionWith(this);
 	}
+
 	return bColliding;
 }
 void MyRigidBody::Init(void)
