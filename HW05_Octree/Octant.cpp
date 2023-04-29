@@ -142,7 +142,7 @@ void Octant::Display(vector3 a_v3Color)
 	// Guard clause against empty children list
 	if (m_uChildren == 0)
 	{
-		return;
+		return; 
 	}
 
 	// Display children
